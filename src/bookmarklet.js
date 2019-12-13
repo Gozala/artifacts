@@ -18,7 +18,7 @@ const update = (state, message) => {
 
 const updateClient = (state, message) => {
   switch (message.type) {
-    "ready": {
+    case "ready": {
       return {status:"ready"}
     }
     default: {
@@ -63,7 +63,7 @@ const receive = (context) => {
 }
 
 const view = (context) =>
-  context.status === "loading" ? viewLoading(context) : viewLoaded(context)
+  context.state.status === "loading" ? viewLoading(context) : viewLoaded(context)
 
 const viewLoading = (context) => {
   if (context.node) {
@@ -85,7 +85,7 @@ const viewLoaded = (context) => {
     context.node.channel = channel
     channel.port1.start()
     channel.port1.addEventListener("message", context)
-    context.node.postMessage(channel.port2)
+    context.node.contentWindow.postMessage({port:channel.port2}, context.node.src, [channel.port2])
   }
   
   return context.node
@@ -101,6 +101,8 @@ class Program {
     this.update = update
     this.view = view
     this.receive = receive
+    this.save = save
+    this.effect = effect
   }
   activate(target) {
     this.target = target
@@ -127,7 +129,7 @@ class Program {
   }
   handleEvent(event) {
     this.event = event
-    this.message = this.receive(event)
+    this.message = this.receive(this)
     this.event = null
     if (this.message) {
       this.transact()
@@ -153,4 +155,5 @@ class Program {
   }
 }
 
-new Program({init, update, view, receive, effect, save}).activate(window)
+const program = new Program({init, update, view, receive, effect, save})
+program.activate(document.body)
