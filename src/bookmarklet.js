@@ -16,7 +16,7 @@ const update = (state, message) => {
   }
 }
 
-const updateClient = (state, message) {
+const updateClient = (state, message) => {
   switch (message.type) {
     "ready": {
       return {status:"ready"}
@@ -27,7 +27,7 @@ const updateClient = (state, message) {
   }
 }
 
-const statusStyle = (status) {
+const statusStyle = (status) => {
   switch (status) {
     case "loading": {
       return { display: "none", opacity: 0 };
