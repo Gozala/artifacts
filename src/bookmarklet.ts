@@ -370,7 +370,7 @@ const service = {
   }
 }
 
-export const program = ((<any>window).program = new Program(
+const program = ((<any>window).program = new Program(
   { init, update, view, receive, effect, save },
   document.body
 ))
@@ -461,7 +461,11 @@ const query = function*<a>(
 const getText = ({ textContent }: Element): string => textContent || ""
 
 const getContent = (metaEl: Element): string | null =>
-  metaEl instanceof HTMLMetaElement ? metaEl.content : null
+  !(metaEl instanceof HTMLMetaElement)
+    ? null
+    : metaEl.content == ""
+    ? null
+    : metaEl.content
 
 const getSrc = (imgEl: HTMLImageElement): string => imgEl.src
 
