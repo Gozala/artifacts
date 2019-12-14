@@ -1,0 +1,71 @@
+main {
+  padding: 20px;
+  font-family: "Helvetica", sans-serif;
+  font-size: 12px;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  color: #444;
+  height: 300px;
+  margin: 0 10px;
+  overflow: hidden;
+  position: relative;
+  width: 240px;
+}
+
+.card header {
+  height: 24px;
+  line-height: 24px;
+  margin: 0px 24px 0px 10px;
+  overflow: hidden;
+  position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card .title {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 18px;
+  margin: 0 10px 8px 10px;
+  width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card .icon {
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  border-radius: 3px;
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+}
+
+.card .image {
+  background-color: #ddd;
+  background-image: none;
+  background-position: center center;
+  background-size: cover;
+  height: 150px;
+  margin-bottom: 14px;
+  position: relative;
+  width: 240px;
+}
+
+.card .description {
+  font-size: 12px;
+  line-height: 18px;
+  height: 72px;
+  margin: 0px 10px;
+  overflow: hidden;
+  white-space: normal;
+}
