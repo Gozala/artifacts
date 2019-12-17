@@ -1,4 +1,4 @@
-import { ScrapeData } from "../bookmarklet"
+import { ScrapeData, ArchiveData } from "../host/bookmarklet"
 
 type ScrapedState = {
   status: "scraped"
@@ -20,7 +20,9 @@ type Message =
   | { type: "connected"; port: MessagePort }
   | { type: "close" }
 
-export type HostMessage = { type: "scraped"; scraped: ScrapeData }
+export type HostMessage =
+  | { type: "scraped"; scraped: ScrapeData }
+  | { type: "archived"; archived: ArchiveData }
 
 type Transaction = { state: Model; fx: Effect<Message>[] }
 

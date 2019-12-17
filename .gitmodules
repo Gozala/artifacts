@@ -1,0 +1,4 @@
+[submodule "src/freeze-dry"]
+	path = src/freeze-dry
+	url = git@github.com:Gozala/freeze-dry.git
+	branch = bookmarklet

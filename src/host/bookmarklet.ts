@@ -1,4 +1,5 @@
-import { HostMessage } from "./client/main"
+import { HostMessage } from "../client/main"
+import freezeDry from "../freeze-dry/src/index"
 
 type Status = "loading" | "loaded" | "ready"
 type Model = {
@@ -10,14 +11,22 @@ type Message =
   | { type: "loaded" }
   | { type: "client"; message: ClientMessaage }
   | { type: "scraped"; scraped: ScrapeData }
+  | { type: "archived"; archived: ArchiveData }
   | { type: "logError"; logError: any }
 
-type ClientMessaage = { type: "ready" } | { type: "close" } | { type: "scrape" }
+type ClientMessaage =
+  | { type: "ready" }
+  | { type: "close" }
+  | { type: "scrape" }
+  | { type: "archive" }
 type Transaction = { state: Model; fx: Effect<Message>[] }
 
 const inbox = {
   onScraped(data: ScrapeData): Message {
     return { type: "scraped", scraped: data }
+  },
+  onArchived: function(data: ArchiveData) {
+    return { type: "archived", archived: data }
   },
   logError(error: any): Message {
     return { type: "logError", logError: error }
@@ -38,6 +47,18 @@ const update = (state: Model, message: Message): Transaction => {
       return {
         state,
         fx: [Task.perform(() => service.send(state.channel, message))]
+      }
+    }
+    case "archived": {
+      return {
+        state: state,
+        fx: [
+          Task.perform(function() {
+            return service.send(state.channel, message, [
+              message.archived.bytes
+            ])
+          })
+        ]
       }
     }
     case "client": {
@@ -64,6 +85,12 @@ const updateClient = (state: Model, message: ClientMessaage): Transaction => {
       return {
         state,
         fx: [Task.perform(service.scrape, inbox.onScraped, inbox.logError)]
+      }
+    }
+    case "archive": {
+      return {
+        state: state,
+        fx: [Task.perform(service.archive, inbox.onArchived, inbox.logError)]
       }
     }
     default: {
@@ -302,6 +329,21 @@ export type ScrapeData = {
   name: string
 }
 
+export type ArchiveData = {
+  url: string
+  data: ArrayBuffer
+}
+
+const baseURL = (spec: string): string => {
+  var url = new URL(spec)
+  url.search = ""
+  url.hash = ""
+  var href = url.href
+  return href.endsWith("/") ? href : href + "/"
+}
+
+const makeRelative = (url: string): string => "./" + url.replace(/:\/\//g, "/")
+
 const service = {
   async scrape(document: Document = window.document): Promise<ScrapeData> {
     /*
@@ -350,6 +392,24 @@ const service = {
     }
   },
 
+  async archive(document: Document = window.document): Promise<ArchiveData> {
+    const base = baseURL(document.URL)
+    const data = new FormData()
+    const root = freezeDry(document, {
+      signal: null,
+      resolveURL: async resource => {
+        const blob = await resource.blob()
+        const url = new URL(makeRelative(resource.url), base)
+        data.set(url.href, blob)
+        return url.href
+      }
+    })
+    const blob = root.blob()
+
+    data.set("/", blob)
+    const bytes = await new Response(data).arrayBuffer()
+    return { url: document.URL, data: bytes }
+  },
   loaded() {
     return new window.Promise(resolve => {
       if (document.readyState === "complete") {
@@ -365,8 +425,12 @@ const service = {
     })
   },
 
-  send(channel: MessageChannel, message: HostMessage) {
-    channel.port1.postMessage(message)
+  send(
+    channel: MessageChannel,
+    message: HostMessage,
+    transfer: ArrayBuffer[] = []
+  ) {
+    channel.port1.postMessage(message, transfer)
   }
 }
 
