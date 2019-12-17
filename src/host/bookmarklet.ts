@@ -25,7 +25,7 @@ const inbox = {
   onScraped(data: ScrapeData): Message {
     return { type: "scraped", scraped: data }
   },
-  onArchived: function(data: ArchiveData) {
+  onArchived: function(data: ArchiveData): Message {
     return { type: "archived", archived: data }
   },
   logError(error: any): Message {
@@ -54,9 +54,7 @@ const update = (state: Model, message: Message): Transaction => {
         state: state,
         fx: [
           Task.perform(function() {
-            return service.send(state.channel, message, [
-              message.archived.bytes
-            ])
+            return service.send(state.channel, message, [message.archived.data])
           })
         ]
       }
@@ -88,6 +86,7 @@ const updateClient = (state: Model, message: ClientMessaage): Transaction => {
       }
     }
     case "archive": {
+      debugger
       return {
         state: state,
         fx: [Task.perform(service.archive, inbox.onArchived, inbox.logError)]
@@ -397,7 +396,7 @@ const service = {
     const data = new FormData()
     const root = freezeDry(document, {
       signal: null,
-      resolveURL: async resource => {
+      resolveURL: async (resource: { url: string; blob(): Promise<Blob> }) => {
         const blob = await resource.blob()
         const url = new URL(makeRelative(resource.url), base)
         data.set(url.href, blob)

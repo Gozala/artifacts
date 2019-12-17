@@ -1,3 +1,6 @@
 {
-  "name": "artifacts"
+  "name": "artifacts",
+  "scripts": {
+    "build": "rollup -c --format iife -o dist/bookmarklet.js -m dist/bookmarklet.js.map"
+  }
 }
